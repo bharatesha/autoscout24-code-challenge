@@ -2,7 +2,11 @@ import React, { Component } from 'react';
 
 class AverageSellingPrice extends Component {
     API_URL = "http://localhost:8080/reports/AvgListingPrice";
-    state = { averageSellingPrice: [] };
+
+    constructor(props){
+       super(props);
+       this.state = { averageSellingPrice: [] };
+    }
 
     render() {
         return (
@@ -20,7 +24,7 @@ class AverageSellingPrice extends Component {
                             </tr>
                         </thead>
                         <tbody>
-                            {(this.state.averageSellingPrice.length > 0) ? this.state.averageSellingPrice[0].map((listing, index) => {
+                            {(this.state.averageSellingPrice.length > 0) ? this.state.averageSellingPrice.map((listing, index) => {
                                 return (
                                     <tr key={index}>
                                         <td>{index + 1}</td>
@@ -39,8 +43,7 @@ class AverageSellingPrice extends Component {
         fetch(this.API_URL)
             .then(res => res.json())
             .then((data) => {
-                this.setState({ averageSellingPrice: [...this.state.averageSellingPrice, data] });
-                this.render();
+                this.setState({ averageSellingPrice: data });
             })
             .catch(console.log)
     }

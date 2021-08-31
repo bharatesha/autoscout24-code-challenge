@@ -3,7 +3,11 @@ import React, { Component } from 'react';
 class MostContactedListingPerMonth extends Component {
 
     API_URL = "http://localhost:8080/reports/Top5ListingsPerMonth";
-    state = { mostContactedPerMonth: [] };
+
+    constructor(props){
+      super(props);
+      this.state = { mostContactedPerMonth: [] };
+    }
 
     render() {
         return (
@@ -12,7 +16,7 @@ class MostContactedListingPerMonth extends Component {
                     <nav className="navbar navbar-light bg-light">
                         <a className="navbar-brand" href="./">The Top 5 most contacted listings per Month</a>
                     </nav>
-                    {(this.state.mostContactedPerMonth.length > 0) ? this.state.mostContactedPerMonth[0].map((mostContactedlistings, index) => {
+                    {(this.state.mostContactedPerMonth.length > 0) ? this.state.mostContactedPerMonth.map((mostContactedlistings, index) => {
                         return (
                             <div id={index}>
                                 <h4>{mostContactedlistings.monthYear}</h4>
@@ -55,8 +59,7 @@ class MostContactedListingPerMonth extends Component {
         fetch(this.API_URL)
             .then(res => res.json())
             .then((data) => {
-                this.setState({ mostContactedPerMonth: [...this.state.mostContactedPerMonth, data] });
-                this.render();
+                this.setState({ mostContactedPerMonth: data });
             })
             .catch(console.log)
     }

@@ -3,7 +3,11 @@ import React, { Component } from 'react';
 
 class CarsDistribution extends Component {
   API_URL = "http://localhost:8080/reports/MakeDistributionPercent";
-  state = { carsDistributionPercent: [] };
+
+  constructor(props){
+    super(props);
+    this.state = { carsDistributionPercent: [] };
+  }
 
   render() {
 
@@ -22,7 +26,7 @@ class CarsDistribution extends Component {
               </tr>
             </thead>
             <tbody>
-              {(this.state.carsDistributionPercent.length > 0) ? this.state.carsDistributionPercent[0].map((cars, index) => {
+              {(this.state.carsDistributionPercent.length > 0) ? this.state.carsDistributionPercent.map((cars, index) => {
                 return (
                   <tr key={index}>
                     <td>{index + 1}</td>
@@ -42,8 +46,7 @@ class CarsDistribution extends Component {
     fetch(this.API_URL)
       .then(res => res.json())
       .then((data) => {
-        this.setState({ carsDistributionPercent: [...this.state.carsDistributionPercent, data] });
-        this.render();
+        this.setState({ carsDistributionPercent:  data });
       })
       .catch(console.log)
   }
