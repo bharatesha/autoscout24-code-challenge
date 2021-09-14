@@ -2,11 +2,11 @@ import React, { Component } from 'react';
 
 
 class CarsDistribution extends Component {
-  API_URL = "http://localhost:8080/reports/MakeDistributionPercent";
-
+  
   constructor(props){
     super(props);
     this.state = { carsDistributionPercent: [] };
+    this.apiUrl= process.env.REACT_APP_REPORT_SERVICE_API_URL+'MakeDistributionPercent';
   }
 
   render() {
@@ -43,7 +43,7 @@ class CarsDistribution extends Component {
   }
   componentDidMount() {
 
-    fetch(this.API_URL)
+    fetch(this.apiUrl)
       .then(res => res.json())
       .then((data) => {
         this.setState({ carsDistributionPercent:  data });

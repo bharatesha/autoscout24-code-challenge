@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
 
 class AveragePriceMostContactedList extends Component {
-    API_URL = "http://localhost:8080/reports/Avg30PercentMostContactedListingsPrice";
 
     constructor(props){
       super(props);
       this.state = { averagePriceMostContactedList: [] };
+      this.apiUrl= process.env.REACT_APP_REPORT_SERVICE_API_URL+'Avg30PercentMostContactedListingsPrice';
     }
 
     render() {
@@ -39,7 +39,7 @@ class AveragePriceMostContactedList extends Component {
         );
     }
     componentDidMount() {
-        fetch(this.API_URL)
+        fetch(this.apiUrl)
             .then(res => res.json())
             .then((data) => {
                 this.setState({ averagePriceMostContactedList: [ data] });

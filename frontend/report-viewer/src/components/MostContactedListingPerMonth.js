@@ -2,11 +2,10 @@ import React, { Component } from 'react';
 
 class MostContactedListingPerMonth extends Component {
 
-    API_URL = "http://localhost:8080/reports/Top5ListingsPerMonth";
-
     constructor(props){
       super(props);
       this.state = { mostContactedPerMonth: [] };
+      this.apiUrl = process.env.REACT_APP_REPORT_SERVICE_API_URL+'Top5ListingsPerMonth';
     }
 
     render() {
@@ -18,7 +17,7 @@ class MostContactedListingPerMonth extends Component {
                     </nav>
                     {(this.state.mostContactedPerMonth.length > 0) ? this.state.mostContactedPerMonth.map((mostContactedlistings, index) => {
                         return (
-                            <div id={index}>
+                            <div id={index} key={mostContactedlistings.monthYear}>
                                 <h4>{mostContactedlistings.monthYear}</h4>
                                 <table className="table">
                                     <thead>
@@ -34,7 +33,7 @@ class MostContactedListingPerMonth extends Component {
                                     <tbody>
                                         {mostContactedlistings.listings.map((listings, i) => {
                                             return (
-                                                <tr key={i}>
+                                                <tr key={listings.listingId}>
                                                     <td>{listings.ranking}</td>
                                                     <td>{listings.listingId}</td>
                                                     <td>{listings.make}</td>
@@ -49,14 +48,14 @@ class MostContactedListingPerMonth extends Component {
                                 </table>
                             </div>
                         )
-                    }) : <tr><td colSpan="5">Loading...</td></tr>}
+                    }) : <div colSpan="5">Loading...</div>}
                 </div>
             </div>
         );
 
     }
     componentDidMount() {
-        fetch(this.API_URL)
+        fetch(this.apiUrl)
             .then(res => res.json())
             .then((data) => {
                 this.setState({ mostContactedPerMonth: data });

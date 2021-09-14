@@ -14,6 +14,7 @@ import java.math.RoundingMode;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -91,6 +92,51 @@ public class ReportServiceImpl implements ReportService {
     }
 
     public List<ListingsPerMonthDto> getTop5ListingsPerMonth(Map<Long, Listing> listingsMap, final Map<Long, List<Instant>> contactListings) {
+        //function to convert instant to month format and group by month
+        final Function<List<Instant>, Map<String, Long>> monthCountFunc = list -> list.parallelStream().<String>map(instant -> DateUtil.formatDate(instant))
+                .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
+
+        // function to convert to listing dto
+        final Function<Map.Entry<Long, Map<String, Long>>, Map<String, ListingDto>> toListingDtoFunc = entry -> entry.getValue()
+                .entrySet().parallelStream()
+                .collect(Collectors.toConcurrentMap(Map.Entry::getKey, e -> transformationService.toListingDto(listingsMap.get(entry.getKey()), e.getValue())));
+
+        //pick top 5 listings after grouping and Compare first by total contact count and then listing id
+        final Function< List<Map.Entry<String, ListingDto>>, Set<ListingDto> > sortPickTop5ListingFunc = listEntry -> {
+            AtomicInteger count = new AtomicInteger(0);
+            return listEntry.stream().map(Map.Entry::getValue)
+                    .sorted(Comparator.comparing(
+                            (ListingDto listingDto) -> listingDto.totalAmountOfContacts).reversed().thenComparing((ListingDto listingDto) -> listingDto.listingId)
+                    )
+                    .limit(5)
+                    .peek(listingDto -> listingDto.ranking = count.incrementAndGet())
+                    .collect(Collectors.toCollection(LinkedHashSet::new));
+        };
+
+        return contactListings.entrySet()
+                .parallelStream()
+                // Get monthly count
+                /*.collect(Collectors.toConcurrentMap(Map.Entry::getKey, e -> monthCountFunc.apply(e.getValue())))
+                .entrySet().parallelStream()*/
+                .map( e -> new AbstractMap.SimpleEntry<>(e.getKey(), monthCountFunc.apply(e.getValue())))
+                //convert to dto
+                .flatMap( e -> toListingDtoFunc.apply(e).entrySet().stream())
+                //Group by month
+                .collect(Collectors.groupingByConcurrent(Map.Entry::getKey,
+                        //After grouping, pick top 5
+                        Collectors.collectingAndThen(Collectors.toList(),  sortPickTop5ListingFunc)
+                ))
+                //convert to ListingsPerMonthDto
+                .entrySet().parallelStream()
+                .map( entry -> new ListingsPerMonthDto(entry.getKey(), entry.getValue()))
+                //sort by month
+                .sorted(Comparator.comparing( lmDto -> DateUtil.convertToDate(lmDto.monthYear)) )
+                .collect(Collectors.toList());
+    }
+    //TODO:end
+
+    //By converting to Contact list object _Object
+    public List<ListingsPerMonthDto> getTop5ListingsPerMonth_Object(Map<Long, Listing> listingsMap, final Map<Long, List<Instant>> contactListings) {
 
         //Create contact object list to do group by
         List<Contact> contactList = transformationService.transformToContactList(contactListings);
@@ -111,13 +157,13 @@ public class ReportServiceImpl implements ReportService {
                 .collect(Collectors.toList());
     }
 
-    private List<ListingDto> transformAndGetTop5ListingsPerMonth(Map<Long, Long> contactsListingCountMap, Map<Long, Listing> listingsMap) {
+    private Set<ListingDto> transformAndGetTop5ListingsPerMonth(Map<Long, Long> contactsListingCountMap, Map<Long, Listing> listingsMap) {
         AtomicInteger runCount = new AtomicInteger(0);
         return contactsListingCountMap.entrySet().stream()
-                .sorted(Map.Entry.<Long, Long>comparingByValue().reversed())
+                .sorted(Map.Entry.<Long, Long>comparingByValue().reversed().thenComparing(Map.Entry::getKey))
                 .limit(5)
                 .map((contactCountEntry) -> transformationService.transformToListingDto(listingsMap, contactCountEntry, runCount.incrementAndGet()))
-                .collect(Collectors.toList());
+                .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
 }

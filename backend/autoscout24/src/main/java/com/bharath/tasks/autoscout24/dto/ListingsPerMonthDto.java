@@ -1,8 +1,8 @@
 package com.bharath.tasks.autoscout24.dto;
 
 import java.io.Serializable;
-import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 public class ListingsPerMonthDto implements Serializable {
 
@@ -10,9 +10,9 @@ public class ListingsPerMonthDto implements Serializable {
 
     public final String monthYear;
 
-    public final List<ListingDto> listings;
+    public final Set<ListingDto> listings;
 
-    public ListingsPerMonthDto(String monthYear, List<ListingDto> listings) {
+    public ListingsPerMonthDto(String monthYear, Set<ListingDto> listings) {
         this.monthYear = monthYear;
         this.listings = listings;
     }

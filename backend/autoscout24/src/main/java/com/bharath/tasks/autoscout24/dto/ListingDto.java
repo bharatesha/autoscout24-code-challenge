@@ -7,7 +7,7 @@ public class ListingDto implements Serializable {
 
     public static final long serialVersionUID = 1L;
 
-    public final Integer ranking;
+    public Integer ranking;
 
     public final Long listingId;
 

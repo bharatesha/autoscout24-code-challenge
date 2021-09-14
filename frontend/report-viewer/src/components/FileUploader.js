@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 
 function FileUploader() {
-    const API_URL = "http://localhost:8080/reports/";
+    const API_URL = process.env.REACT_APP_REPORT_SERVICE_API_URL;
     const [selectedFile, setSelectedFile] = useState();
 
     const changeHandler = (event) => {

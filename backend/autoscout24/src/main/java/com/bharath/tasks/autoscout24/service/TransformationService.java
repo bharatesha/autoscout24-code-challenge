@@ -30,4 +30,9 @@ public class TransformationService {
                 .map(date -> new Contact(listingId, date))
                 .collect(Collectors.toList());
     }
+
+    public ListingDto toListingDto(Listing listing, long totalContactCnt){
+        ListingDto listingDto = new ListingDto(0, listing.getId(), listing.getMake(), FormatUtils.formatCurrency(listing.getPrice()), FormatUtils.formatMileage(listing.getMileage()) , totalContactCnt);
+        return listingDto;
+    }
 }
