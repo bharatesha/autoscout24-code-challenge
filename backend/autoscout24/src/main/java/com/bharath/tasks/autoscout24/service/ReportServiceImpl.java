@@ -15,6 +15,7 @@ import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 @Service
@@ -28,6 +29,32 @@ public class ReportServiceImpl implements ReportService {
     }
 
     public List<AvgListingPriceDto> getAvgListingPrice(List<Listing> listingsList) {
+
+        //collector for calculating average big decimal. collector.of(supplier, consumer, combiner<BinaryOperator>, finisher)
+        Collector<BigDecimal, BigDecimal[], String> bigDecimalAvgCollector = Collector.of(
+                () -> new BigDecimal[]{BigDecimal.ZERO, BigDecimal.ZERO},
+                (pair, val) -> {
+                    pair[0] = pair[0].add(val);
+                    pair[1] = pair[1].add(BigDecimal.ONE);
+                },
+                (pair1, pair2) -> new BigDecimal[]{ pair1[0].add(pair2[0]), pair1[1].add(pair2[1]) },
+                (pair) -> FormatUtils.formatCurrency(pair[0].divide(pair[1], RoundingMode.CEILING))
+        );
+
+        return listingsList.stream()
+                .collect(
+                        Collectors.groupingBy(
+                            Listing::getSellerType,
+                            Collectors.mapping(Listing::getPrice, bigDecimalAvgCollector)
+                        )
+                )
+                .entrySet().stream()
+                .sorted( Map.Entry.<String, String>comparingByKey().reversed())
+                .map(e -> new AvgListingPriceDto(e.getKey(), e.getValue()))
+                .collect(Collectors.toList());
+    }
+
+    public List<AvgListingPriceDto> getAvgListingPrice_old(List<Listing> listingsList) {
 
         final Map<String, BigDecimal> avgListingPriceSumMap = new HashMap<>();
 
